@@ -1,0 +1,23 @@
+# Autor: Jeferson Lopes
+# Data: 30/01/2014
+# Contém arquivos necessários para configuração de Proxy nos desktops da rede;
+# Distribuição via netlogon no AD.
+#
+# Descrição dos Arquivos:
+# - import_reg.bat
+#	Verificara endereço IPv4 local;
+#	Resultado é copiado para variável e testado;
+#	Conforme resultado obtido é especificado que o arquivo proxy_on.reg ou 
+#	proxy_off.reg seja importado para o registro do sistema
+#
+# proxy_on.reg
+#	Seta no sistema operacional através do Registro do Windows, quais são os 
+#	endreços IPs que não terão restrição de acesso;
+#	Seta o endereço de Proxy 10.0.2.7:3128 para uso de Internet, habilitando-o;
+#	Seta a página inicial de Internet
+#
+# proxy_ff.reg
+#	Seta no sistema operacional através do Registro do Windows, quais são os 
+#	endreços IPs que não terão restrição de acesso;
+#	Desabilita o endereço de Proxy 10.0.2.7:3128 para uso de Internet;
+#	Seta a página inicial de Internet
