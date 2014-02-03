@@ -1,0 +1,84 @@
+select
+mes,
+ds_mes,
+round(pessoal,2),
+round(perc_pessoal,2),
+round(materiais,2),
+round(perc_matetiais,2),
+round(mat_med,2),
+round(perc_mat_med,2),
+round(consumo_material,2),
+round(perc_cons_mater,2),
+round(honorarios_med,2),
+round(perc_honor_me,2),
+round(total_geral,2),
+round(perc_geral,2),
+round(custo_total,2),
+round(variacao,2)
+from(
+select e.mes,
+e.ds_mes,
+e.pessoal,
+e.perc_pessoal,
+e.materiais,
+e.perc_matetiais,
+e.mat_med,
+e.perc_mat_med,
+e.consumo_material,
+e.perc_cons_mater,
+e.honorarios_med,
+e.perc_honor_me,
+e.total_geral,
+e.perc_geral,
+e.custo_total,
+(sum((e.custo_total)- (var.media_total))/(var.media_total)*100) variacao
+from dbamv.comp_evol_custos_qdr_1 e,
+(select avg(b.custo_total)media_total,
+b.ano
+from DBAMV.comp_evol_custos_qdr_1 b
+where
+b.ano=#ano#
+group by b.ano
+)var
+where
+e.ano=var.ano
+and e.ano=#ano#
+group by mes,
+ds_mes,
+pessoal,
+perc_pessoal,
+materiais,
+perc_matetiais,
+mat_med,
+perc_mat_med,
+e.consumo_material,
+e.perc_cons_mater,
+honorarios_med,
+perc_honor_me,
+total_geral,
+perc_geral,
+custo_total,
+var.media_total
+union all
+select 
+to_char(null)mes,
+ #ano#||' - '||'MÉDIA :' ds_mes,
+avg(e.pessoal)pessoal,
+avg(e.perc_pessoal)perc_pessoal,
+avg(e.materiais)materiais,
+avg(e.perc_matetiais)perc_materiais,
+avg(e.mat_med)mat_med,
+avg(e.perc_mat_med)perc_mat_med,
+avg(e.consumo_material)consumo_material,
+avg(e.perc_cons_mater)perc_cons_mater,
+avg(e.honorarios_med)honorarios,
+avg(e.perc_honor_me)perc_honorarios,
+avg(e.total_geral)geral,
+avg(e.perc_geral)perc_geral,
+avg(e.custo_total)custo_total
+,to_number(null) variacao
+from DBAMV.comp_evol_custos_qdr_1 e
+where
+e.ano=#ano#
+group by e.ano
+)order by mes

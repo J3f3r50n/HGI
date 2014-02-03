@@ -1,0 +1,235 @@
+create or replace view demonst_custo_serv_qdr_4 as
+select mes,ano,cd_setor, nm_setor, cd_cen_cus
+       ,sum(func)n_func
+       ,round(sum(Custo_pessoal)+sum(Honorarios_med),2)vl_pessoal
+       ,round((sum(Materiais)+sum(Mat_Med)),2)vl_cons_materiais
+       ,round(sum(Mat_Med),2)vl_mat_med
+       ,round (sum(Honorarios_med)) vl_honorarios_med
+       ,round(sum(Custo_Geral),2)vl_geral
+       ,round((sum(Custo_pessoal)+sum(Materiais)+sum(Mat_Med)+sum(Honorarios_med)+sum(Custo_Geral)),2)vl_sub_total
+       ,round((sum(rateio_abs)),2)vl_Rateio_abs
+       ,round((sum(Custo_pessoal)+sum(Materiais)+sum(Mat_Med)+sum(Honorarios_med)+sum(Custo_Geral)+sum(rateio_abs)),2)vl_Custo_total
+       ,round(sum(qtd_prod))qtd_prod
+from (
+select
+       to_char(producao_mensal.dt_competencia,'mm')mes,
+       to_char(PRODUCAO_MENSAL.DT_COMPETENCIA,'yyyy')ano,
+       setor.cd_setor,
+       setor.nm_setor,
+       setor.cd_cen_cus cd_cen_cus
+       ,sum(vl_producao_mensal) func
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+       ,0 rateio_abs
+       ,0 qtd_prod
+  from dbamv.item_prod_mensal,
+       dbamv.setor,
+       dbamv.producao_mensal,
+       dbamv.item_producao,
+       dbamv.multi_empresas  m
+  where item_prod_mensal.cd_setor_destino = setor.cd_setor and
+        item_prod_mensal.cd_item_producao = item_producao.cd_item_producao and
+        item_prod_mensal.cd_producao_mensal = producao_mensal.cd_producao_mensal
+        and item_prod_mensal.cd_item_producao='FUNC.'
+        and setor.cd_multi_empresa=m.cd_multi_empresa
+        and m.cd_multi_empresa=1
+        group by  setor.cd_setor,
+       nm_setor,
+       item_prod_mensal.cd_item_producao
+        ,PRODUCAO_MENSAL.DT_COMPETENCIA
+        , setor.cd_cen_cus
+union
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,setor.cd_setor cd_setor
+       ,setor.nm_setor nm_setor
+       ,setor.cd_cen_cus cd_cen_cus
+       ,0 func
+       ,sum(vl_custo_setor)Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+       ,0 rateio_abs
+       ,0 qtd_prod
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where         item_res.cd_gru_res = gru_res.cd_gru_res and
+              custo_primario.cd_item_res = item_res.cd_item_res and
+              custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and m.cd_multi_empresa=1
+              and item_res.cd_item_res not in (252,253,261,92)
+              and gru_res.cd_gru_res in(24,30)
+              group by dt_competencia,setor.cd_setor ,setor.nm_setor  ,setor.cd_cen_cus
+
+union
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,setor.cd_setor  cd_setor
+       ,setor.nm_setor nm_setor
+        ,setor.cd_cen_cus cd_cen_cus
+       ,0 func
+       ,0 Custo_pessoal
+       ,sum(vl_custo_setor) Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+       ,0 rateio_abs
+       ,0 qtd_prod
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where        item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+             setor.cd_multi_empresa = m.cd_multi_empresa
+             and m.cd_multi_empresa=1
+             and gru_res.cd_gru_res in(25)
+group by dt_competencia,setor.cd_setor ,setor.nm_setor  ,setor.cd_cen_cus
+union all
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,setor.cd_setor
+       ,setor.nm_setor nm_setor
+       ,setor.cd_cen_cus cd_cen_cus
+       ,0 func
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,sum(vl_custo_setor) Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+       ,0 rateio_abs
+       ,0 qtd_prod
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where        item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and m.cd_multi_empresa=1
+              and gru_res.cd_gru_res in(26)
+group by dt_competencia,setor.cd_setor ,setor.nm_setor  ,setor.cd_cen_cus
+union all
+select to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,setor.cd_setor
+       ,setor.nm_setor nm_setor
+        ,setor.cd_cen_cus cd_cen_cus
+       ,0 func
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,sum(vl_custo_setor) Honorarios_med
+       ,0 Custo_Geral
+       ,0 rateio_abs
+       ,0 qtd_prod
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where     item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and m.cd_multi_empresa=1
+              and item_res.cd_item_res in (252,253,261,92)
+              and gru_res.cd_gru_res in(24,30)
+ group by dt_competencia,setor.cd_setor ,setor.nm_setor  ,setor.cd_cen_cus
+ union
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,setor.cd_setor
+       ,setor.nm_setor
+        ,setor.cd_cen_cus cd_cen_cus
+       ,0 func
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,sum(vl_custo_setor) Custo_Geral
+       ,0 rateio_abs
+       ,0 qtd_prod
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where        item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and m.cd_multi_empresa=1
+
+              and gru_res.cd_gru_res in(29,31)
+    group by dt_competencia,setor.cd_setor ,setor.nm_setor   ,setor.cd_cen_cus
+union
+select to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,destino.cd_setor   cd_setor
+       ,destino.nm_setor   nm_setor
+       ,destino.cd_cen_cus  cd_cen_cus
+       ,0 func
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+       , sum(custo_absorvido.vl_custo_absorvido) rateio_abs
+       ,0 qtd_prod
+   from dbamv.custo_absorvido,
+        dbamv.setor   destino,
+        dbamv.setor   origem
+  where custo_absorvido.cd_setor_destino   = destino.cd_setor
+    and custo_absorvido.cd_setor_origem    = origem.cd_setor
+    and destino.cd_multi_empresa           = 1
+    and custo_absorvido.cd_multi_empresa = 1
+    and custo_absorvido.vl_custo_absorvido <> 0
+group by dt_competencia,destino.cd_setor,destino.nm_setor ,destino.cd_cen_cus
+union
+   select to_char(ip.dt_competencia,'mm')mes
+     ,to_char(ip.dt_competencia,'yyyy')ano
+     ,ip.cd_setor   cd_setor
+     ,setor.NM_SETOR nm_setor
+     ,setor.CD_CEN_CUS cd_cen_cus
+     ,0 func
+      ,0 Custo_pessoal
+      ,0 Materiais
+      ,0 Mat_Med
+      ,0 Honorarios_med
+      ,0 Custo_Geral
+      ,0 rateio_abs
+      ,sum(nvl(ip.vl_unid_producao,0))      qtd_prod
+  from dbamv.ind_produtividade ip
+      ,dbamv.setor_item  si
+      ,dbamv.item_producao
+      ,dbamv.setor
+      ,dbamv.multi_empresas m
+ where ip.cd_multi_empresa = 1
+    and ip.cd_setor = si.cd_setor
+    and setor.CD_SETOR=ip.cd_setor
+    and ip.cd_item_producao = si.cd_item_producao
+    and ip.cd_item_producao = item_producao.cd_item_producao
+    and setor.CD_MULTI_EMPRESA=m.cd_multi_empresa
+    and m.cd_multi_empresa=1
+     group by ip.dt_competencia
+     ,ip.cd_setor
+     ,setor.NM_SETOR
+     ,setor.CD_CEN_CUS
+
+ )
+  group by mes,ano,cd_setor,nm_setor  ,cd_cen_cus
+  order by nm_setor,ano
+

@@ -1,0 +1,1 @@
+select * from all_objects where owner='DBAMV' and status='INVALID'

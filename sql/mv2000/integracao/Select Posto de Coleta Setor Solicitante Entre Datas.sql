@@ -1,0 +1,1 @@
+SELECT cd_pedido, dt_pedido, cd_posto_coleta, cd_setor_solicitante FROM mvintegra.integra_saida_solicitacao_sadt WHERE cd_setor_solicitante IN (135) AND Trunc(dt_pedido) BETWEEN To_Date ('&INI') AND To_Date ('&FIN') ORDER BY dt_pedido

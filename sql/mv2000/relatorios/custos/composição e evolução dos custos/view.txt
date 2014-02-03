@@ -1,0 +1,187 @@
+create or replace view comp_evol_custos_qdr_1 as
+select mes,ano
+  ,  (   case when mes='01' then
+             'Janeiro'
+         else
+          case when mes='02' then
+             'Fevereiro'
+             else
+             case when mes='03' then
+              'Março'
+               else
+             case when mes='04' then
+             'Abril'
+              else
+             case when mes='05' then
+             'Maio'
+              else
+             case when mes='06' then
+             'Junho'
+              else
+             case when mes='07' then
+             'Julho'
+              else
+             case when mes='08' then
+             'Agosto'
+              else
+             case when mes='09' then
+             'Setembro'
+              else
+             case when mes='10' then
+             'Outubro'
+              else
+             case when mes='11' then
+             'Novembro'
+              else
+             case when mes='12' then
+             'Dezembro'
+             end
+             end
+             end
+             end
+             end
+             end
+             end
+             end
+             end
+             end
+             end
+             end )ds_mes
+       ,round(pessoal,2)pessoal
+       ,round((sum(pessoal/total)*100),2) perc_Pessoal
+       ,round(materiais,2)materiais
+       ,round((sum(materiais/total)*100),2) perc_matetiais
+       ,round(mat_med,2)mat_med
+       ,round((sum(mat_med/total)*100),2) as perc_mat_med
+       ,round(consmateriais,2)consumo_material
+       ,round((sum(consmateriais/total)*100),2) as perc_cons_mater
+       ,round(honorarios,2)honorarios_med
+       ,round((sum(honorarios/total)*100),2) as perc_honor_me
+       ,round(Geral,2)total_geral
+       ,round((sum(geral/total)*100),2) as perc_geral
+       ,round(total,2)custo_total
+
+from (
+select mes,ano
+       ,sum(Custo_pessoal)pessoal
+       ,sum(Materiais)materiais
+       ,sum(Mat_Med)mat_med
+       ,(sum(Materiais)+sum(Mat_Med))consmateriais
+       ,sum(Honorarios_med)honorarios
+       ,sum(Custo_Geral)Geral
+       ,(sum(Custo_pessoal)+sum(Materiais)+sum(Mat_Med)+sum(Honorarios_med)+sum(Custo_Geral))total
+from (
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,sum(vl_custo_setor)Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where         item_res.cd_gru_res = gru_res.cd_gru_res and
+              custo_primario.cd_item_res = item_res.cd_item_res and
+              custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and item_res.cd_item_res not in (252,253,261,92)
+              and gru_res.cd_gru_res in(24,30)
+              group by dt_competencia
+
+
+union
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,0 Custo_pessoal
+       ,sum(vl_custo_setor) Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where        item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+             setor.cd_multi_empresa = m.cd_multi_empresa
+             and gru_res.cd_gru_res in(25)
+group by dt_competencia
+union all
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,sum(vl_custo_setor) Mat_Med
+       ,0 Honorarios_med
+       ,0 Custo_Geral
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where        item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and gru_res.cd_gru_res in(26)
+group by dt_competencia
+union all
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,sum(vl_custo_setor) Honorarios_med
+       ,0 Custo_Geral
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where     item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and item_res.cd_item_res in (252,253,261,92)
+              and gru_res.cd_gru_res in(24,30)
+ group by dt_competencia
+ union
+select  to_char(dt_competencia,'mm')mes
+       ,to_char(dt_competencia,'yyyy')ano
+       ,0 Custo_pessoal
+       ,0 Materiais
+       ,0 Mat_Med
+       ,0 Honorarios_med
+       ,sum(vl_custo_setor) Custo_Geral
+from dbamv.gru_res,
+     dbamv.item_res,
+     dbamv.custo_primario,
+     dbamv.setor,
+     dbamv.multi_empresas m
+where        item_res.cd_gru_res = gru_res.cd_gru_res and
+             custo_primario.cd_item_res = item_res.cd_item_res and
+             custo_primario.cd_setor = setor.cd_setor and
+              setor.cd_multi_empresa = m.cd_multi_empresa
+              and gru_res.cd_gru_res in(29,31)
+    group by dt_competencia
+
+ )
+
+  group by mes,ano
+)
+group by mes,ano
+      , pessoal
+       ,materiais
+         ,mat_med
+       ,consmateriais
+         ,honorarios
+        ,Geral
+       ,total
+
+having pessoal > 0
+

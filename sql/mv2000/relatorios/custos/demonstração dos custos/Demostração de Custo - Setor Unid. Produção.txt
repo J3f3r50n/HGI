@@ -1,0 +1,80 @@
+select
+mes_ano
+,nm_setor
+,round(n_func)
+,round( vl_pessoal,2)
+,round( vl_cons_materiais,2)
+,round( vl_geral,2)
+,round(vl_sub_total,2)
+,round(vl_rateio_abs,2)
+,round(vl_custo_total,2) 
+,round(qtd_prod,2) 
+,round(custo_unit_c_mat)custo_unit_c_mat
+,round(vl_mat_med,2)vl_mat_med
+,round(custo_unit_s_mat,2)custo_unit_s_mat
+,round(vl_honorarios_med) honor_med
+,round(custo_unit_s_honor_med,2)custo_unit_s_honor_med
+from(
+select
+d.nm_setor mes_ano
+,TO_CHAR(NULL) nm_setor
+,to_number(null) n_func
+,to_number(null) vl_pessoal
+,to_number(null)  vl_cons_materiais
+,to_number(null)  vl_geral
+,to_number(null)  vl_sub_total
+,to_number(null)  vl_rateio_abs
+,to_number(null)  vl_custo_total 
+,to_number(null)  qtd_prod 
+,to_number(null)custo_unit_c_mat
+,to_number(null) vl_mat_med
+,to_number(null)custo_unit_s_mat
+,to_number(null)vl_honorarios_med
+,to_number(null)custo_unit_s_honor_med
+from dbamv.demonst_custo_serv_qdr_4 d
+where d.cd_setor=#cdsetor#
+group by TO_CHAR(NULL)
+,to_number(null),d.nm_setor
+UNION ALL
+select
+d.mes ||'/'||d.ano mes_ano
+,d.nm_setor nm_setor
+,d.n_func
+,d.vl_pessoal vl_pessoal
+,d.vl_cons_materiais vl_cons_materiais
+,d.vl_geral vl_geral
+,d.vl_sub_total vl_sub_total
+,d.vl_rateio_abs vl_rateio_abs
+,d.vl_custo_total vl_custo_total 
+,d.qtd_prod
+,decode(d.qtd_prod,0,0,(d.vl_Custo_total/d.qtd_prod))custo_unit_c_mat
+,d.vl_mat_med
+,decode(d.qtd_prod,0,0,((d.vl_custo_total-d.vl_mat_med)/d.qtd_prod))custo_unit_s_mat
+,d.vl_honorarios_med
+,decode(d.qtd_prod,0,0,(((d.vl_custo_total-d.vl_mat_med)-d.vl_honorarios_med)/d.qtd_prod))custo_unit_s_honor_med
+from dbamv.demonst_custo_serv_qdr_4 d
+where d.cd_setor=#cdsetor#
+and d.ano=#ano#
+union all
+
+select
+'Média'||to_char(null) mes_ano
+, d.nm_setor
+,to_number(null)N_FUNC
+,avg( d.vl_pessoal) vl_pessoal
+,avg( d.vl_cons_materiais)vl_cons_materiais
+,avg(d.vl_geral)vl_geral
+,avg( d.vl_sub_total)vl_sub_total
+,avg (d.vl_rateio_abs)vl_rateio_abs
+,avg (d.vl_custo_total)vl_custo_total
+,avg (d.qtd_prod)qtd_prod
+,avg (decode(d.qtd_prod,0,0,(d.vl_Custo_total/d.qtd_prod)))custo_unit_c_mat
+,avg (d.vl_mat_med) vl_mat_med
+,avg (decode(d.qtd_prod,0,0,((d.vl_custo_total-d.vl_mat_med)/d.qtd_prod)))custo_unit_s_mat
+,avg(d.vl_honorarios_med)honor_med
+,avg (decode(d.qtd_prod,0,0,(((d.vl_custo_total-d.vl_mat_med)-d.vl_honorarios_med)/d.qtd_prod)))custo_unit_s_honor_med
+from dbamv.demonst_custo_serv_qdr_4 d
+where d.cd_setor=#cdsetor#
+and  d.ano=#ano#
+group by d.nm_setor
+)

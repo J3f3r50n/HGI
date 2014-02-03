@@ -1,0 +1,202 @@
+select
+ decricao,
+horas_disp
+,horas_limp
+,horas_reais
+,horas_utilizadas
+,ocp_real
+, custo_s_matmed
+,custo_hora_real
+,custo_uti_100
+,custo_uti_padrao
+from(
+select
+ decricao,
+horas_disp
+,horas_limp
+,horas_reais
+,horas_utilizadas
+,ocp_real
+, custo_s_matmed
+,custo_hora_real
+,sum(custo_s_matmed)/sum(horas_reais)  custo_uti_100
+,(sum(custo_s_matmed)/(sum(horas_reais)*0.8))custo_uti_padrao
+
+from(
+(
+select
+'Centro Cirurgico' decricao,
+(decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias)))*24 horas_disp
+,decode(sum(h_limp),0,1,sum(h_limp))horas_limp
+,decode(sum(n_sala),0,1,sum(n_sala))n_sala
+,decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias))*24-decode(sum(h_limp),0,1,sum(h_limp))horas_reais
+,decode(sum( h_utilizada),0,1,sum( h_utilizada))horas_utilizadas
+,round( (sum( h_utilizada)/ ((sum(n_sala)*sum(n_dias)*24) - decode(sum(h_limp),0,1,sum(h_limp)))*100),2)ocp_real
+,decode(sum(custo),0,1,sum(custo)) custo_s_matmed
+,(decode(sum(custo),0,1,sum(custo))/decode(sum( h_utilizada),0,1,sum( h_utilizada)))custo_hora_real
+/*,decode(sum(custo),0,1,sum(custo))/decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias))*24-decode(sum(h_limp),0,1,sum(h_limp))custo_uti_100
+,(decode(sum(custo),0,1,sum(custo))/(decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias))*24)*0.8)custo_uti_padrao
+*/
+from(
+select 
+'Centro Cirurgico' decricao,
+round(sum(a.DT_FIM_LIMPEZA - a.DT_INICIO_LIMPEZA)* 86100/3600)h_limp
+,0 n_sala
+,0 n_dias
+,0  h_utilizada
+,0 custo
+from dbamv.aviso_cirurgia a
+where to_char(a.DT_REALIZACAO,'mm')=#mes#
+and to_char(a.DT_REALIZACAO,'yyyy')=#ano#
+and a.TP_SITUACAO='R'
+and a.CD_CEN_CIR=1
+union
+select
+'Centro Cirurgico' decricao,
+0 h_limp
+,count (s.cd_sal_cir)n_sala
+,0 N_DIAS
+,0  h_utilizada
+,0 custo
+from 
+dbamv.sal_cir s
+where s.cd_cen_cir=1
+union
+select 
+'Centro Cirurgico' decricao,
+0 h_limp
+,0 n_sala
+,sum((#ultdia#)-(1)+1)N_DIAS
+,0  h_utilizada
+,0 custo
+FROM DUAL
+union
+select 
+'Centro Cirurgico' decricao,
+0 h_limp
+,0 n_sala
+,0 N_DIAS
+,round(sum(to_number(to_char(avi_cir.vl_tempo_duracao,'sssss')))/3600)  h_utilizada
+,0 custo
+from dbamv.aviso_cirurgia  avi_cir
+    ,dbamv.cen_cir         cen_cir
+where avi_cir.tp_situacao = 'R'
+and   avi_cir.cd_cen_cir = cen_cir.cd_cen_cir
+and   to_char(avi_cir.DT_REALIZACAO,'mm')=#mes#
+and   to_char(avi_cir.DT_REALIZACAO,'yyyy')=#ano#
+and cen_cir.CD_CEN_CIR=1
+union
+select 
+'Centro Cirurgicp' decricao,
+0 h_limp
+,0 n_sala
+,0 N_DIAS
+,0 h_utilizada
+,sum(d.vl_custo_total-d.vl_mat_med)custo
+from dbamv.demonst_custo_serv_qdr_4 d
+where  d.mes=#mes#
+and d.ano=#ano#
+and d.cd_setor in (68)
+)
+)
+union all
+(
+select
+'CPN - Centro de Parto Normal' decricao,
+(decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias)))*24 horas_disp
+,decode(sum(h_limp),0,1,sum(h_limp))horas_limp
+,decode(sum(n_sala),0,1,sum(n_sala))n_sala
+,decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias))*24-decode(sum(h_limp),0,1,sum(h_limp))horas_reais
+,decode(sum( h_utilizada),0,1,sum( h_utilizada))horas_utilizadas
+,round( (sum( h_utilizada)/ ((sum(n_sala)*sum(n_dias)*24) - decode(sum(h_limp),0,1,sum(h_limp)))*100),2)ocp_real
+,decode(sum(custo),0,1,sum(custo)) custo_s_matmed
+,(decode(sum(custo),0,1,sum(custo))/decode(sum( h_utilizada),0,1,sum( h_utilizada)))custo_hora_real
+/*,(decode(sum(custo),0,1,sum(custo))/decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias))*24)custo_uti_100
+,(decode(sum(custo),0,1,sum(custo))/(decode(sum(n_sala),0,1,sum(n_sala))*decode(sum(n_dias),0,1,sum(n_dias))*24)*0.8)custo_uti_padrao
+*/
+from(
+select 
+'CPN - Centro de Parto Normal' decricao,
+round(sum(a.DT_FIM_LIMPEZA - a.DT_INICIO_LIMPEZA)* 86100/3600)h_limp
+,0 n_sala
+,0 n_dias
+,0  h_utilizada
+,0 custo
+from dbamv.aviso_cirurgia a
+where to_char(a.DT_REALIZACAO,'mm')=#mes#
+and to_char(a.DT_REALIZACAO,'yyyy')=#ano#
+and a.TP_SITUACAO='R'
+and a.CD_CEN_CIR=2
+union
+select
+'CPN - Centro de Parto Normal' decricao,
+0 h_limp
+,count (s.cd_sal_cir)n_sala
+,0 N_DIAS
+,0  h_utilizada
+,0 custo
+from 
+dbamv.sal_cir s
+where s.cd_cen_cir=2
+and s.cd_sal_cir not in (4,5,6)
+union
+select 
+'CPN - Centro de Parto Normal' decricao,
+0 h_limp
+,0 n_sala
+,sum((#ultdia#)-(1)+1)N_DIAS
+,0  h_utilizada
+,0 custo
+FROM DUAL
+union
+select 
+'CPN - Centro de Parto Normal' decricao,
+0 h_limp
+,0 n_sala
+,0 N_DIAS
+,round(sum(to_number(to_char(avi_cir.vl_tempo_duracao,'sssss')))/3600)  h_utilizada
+,0 custo
+from dbamv.aviso_cirurgia  avi_cir
+    ,dbamv.cen_cir         cen_cir
+where avi_cir.tp_situacao = 'R'
+and   avi_cir.cd_cen_cir = cen_cir.cd_cen_cir
+and   to_char(avi_cir.DT_REALIZACAO,'mm')=#mes#
+and   to_char(avi_cir.DT_REALIZACAO,'yyyy')=#ano#
+and cen_cir.CD_CEN_CIR=2
+union
+select 
+'CPN - Centro de Parto Normal' decricao,
+0 h_limp
+,0 n_sala
+,0 N_DIAS
+,0 h_utilizada
+,sum(d.vl_custo_total-d.vl_mat_med)custo
+from dbamv.demonst_custo_serv_qdr_4 d
+where  d.mes=#mes#
+and d.ano=#ano#
+and d.cd_setor in (137)
+)
+)
+)group by
+ decricao,
+horas_disp
+,horas_limp
+,horas_reais
+,horas_utilizadas
+,ocp_real
+, custo_s_matmed
+,custo_hora_real
+)
+union
+select
+ ('Período - '||''||#mes#||'/'||#ano#) decricao,
+ to_number(null)horas_disp
+, to_number(null)horas_limp
+, to_number(null)horas_reais
+, to_number(null)horas_utilizadas
+, to_number(null)ocp_real
+,  to_number(null)custo_s_matmed
+, to_number(null)custo_hora_real
+, to_number(null)custo_uti_100
+, to_number(null)custo_uti_padrao
+from dual

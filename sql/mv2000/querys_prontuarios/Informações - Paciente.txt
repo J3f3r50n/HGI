@@ -1,0 +1,31 @@
+select 
+cd_atendimento,
+nm_paciente,
+ds_endereco, 
+nr_endereco,
+ds_complemento,
+nr_cep,
+nm_bairro,
+cd_cidade,
+tp_sexo
+from 
+dbamv.atendime, dbamv.paciente 
+where 
+atendime.cd_paciente = paciente.cd_paciente 
+-- and atendime.cd_atendimento = &<CD_ATENDIMENTO>
+
+
+select
+ds_complemento,
+ds_logradouro,
+nr_cep,
+cd_uf
+from
+cep_logradouros
+
+select
+nm_cidade,
+cd_cidade,
+cd_localidade
+from dbamv.cep_localidades, dbamv.cidade
+where cep_localidades.cd_localidade = cidade.cd_localidade

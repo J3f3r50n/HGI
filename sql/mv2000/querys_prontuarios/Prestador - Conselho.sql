@@ -1,0 +1,1 @@
+Select c.ds_conselho || ' - ' || p.ds_codigo_conselho conselho From dbasgu.usuarios u,dbamv.prestador p,dbamv.conselho c Where u.cd_prestador = p.cd_prestador(+) and c.cd_conselho(+) = p.cd_conselho and u.cd_usuario = (Select user from dual)

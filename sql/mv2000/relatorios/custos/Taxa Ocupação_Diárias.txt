@@ -1,0 +1,133 @@
+ select mes
+     ,ano
+     ,cd_setor  
+     ,nm_setor
+     ,Custo
+     ,leito
+     ,qtd
+    , round(tx ,2)
+    ,round(custo_unit,2) custo_unit
+    ,round(tx_95)tx_95
+    ,round(custo_unit_2,2)custo_unit_2
+    ,round (diarias)diarias
+    ,round(cutos_unit_3,2)cutos_unit_3
+
+from(
+ select distinct to_number(null) mes
+     ,to_number(null)ano
+     ,to_number(null)cd_setor  
+     ,'Período'||':'||' '|| d.mes||'/'||d.ano nm_setor
+     ,to_number(null)custo
+     ,to_number(null)leito
+     ,to_number(null)dias
+     ,to_number(null)qtd 
+     , to_number(null)tx
+      ,to_number(null)custo_unit
+      ,to_number(null)tx_95
+      ,to_number(null)custo_unit_2
+      ,to_number(null)diarias
+      ,to_number(null)cutos_unit_3
+from dbamv.demonst_custo_serv_qdr_4 d
+where d.mes= #mes#
+and d.ano=#ano#
+union
+ select mes
+     ,ano
+     ,cd_setor  
+     ,nm_setor
+     ,sum(vl_Custo_total)custo
+     ,sum( n_leito)leito
+     ,sum(dias)dias
+     ,sum(qtd_prod)qtd 
+     , ((decode(sum(qtd_prod),0,1,sum(qtd_prod))/
+      (decode(sum(n_leito),0,1,sum(n_leito))*( decode(sum(dias),0,1,sum(dias))))*100)) tx
+      ,(sum(vl_Custo_total)/sum(qtd_prod))custo_unit
+      ,((decode(sum(n_leito),0,1,sum(n_leito))*( decode(sum(dias),0,1,sum(dias))))*0.95)tx_95
+      ,( sum(vl_Custo_total)/((decode(sum(n_leito),0,1,sum(n_leito))*( decode(sum(dias),0,1,sum(dias))))*0.95))custo_unit_2
+      ,(sum( n_leito)*sum(dias))diarias
+      ,( sum(vl_Custo_total)/(sum( n_leito)*sum(dias)))cutos_unit_3
+from(
+
+ select d.mes mes
+ ,d.ano ano
+ ,d.cd_setor cd_setor
+ ,d.nm_setor nm_setor
+ ,(d.vl_custo_total)vl_Custo_total
+ ,0 n_leito
+ ,0 dias
+ ,0  qtd_prod
+ from dbamv.demonst_custo_serv_qdr_4 d,
+ dbamv.unid_int u
+ where
+ d.cd_setor=u.CD_SETOR
+ and d.cd_setor  in (55,56,58,59,60,61,62,63,64,65,66,67,71)
+ and d.mes=#mes#
+ and d.ano=#ano#
+ group by 
+ d.mes
+ ,d.ano
+ ,d.cd_setor 
+ ,d.nm_setor
+ ,d.vl_custo_total
+     
+union
+select 
+       to_char(producao_mensal.dt_competencia,'mm')mes,
+       to_char(PRODUCAO_MENSAL.DT_COMPETENCIA,'yyyy')ano,
+       setor.cd_setor,
+       setor.nm_setor,
+       0 vl_Custo_total,
+       sum(nvl(vl_producao_mensal,0)) n_leito
+      ,sum((#ultdia#)-(1)+1)dias
+       ,0  qtd_prod
+  from dbamv.item_prod_mensal,
+       dbamv.setor,
+       dbamv.producao_mensal,
+       dbamv.item_producao,
+       dbamv.multi_empresas  m
+  where item_prod_mensal.cd_setor_destino = setor.cd_setor and
+        item_prod_mensal.cd_item_producao = item_producao.cd_item_producao and
+        item_prod_mensal.cd_producao_mensal = producao_mensal.cd_producao_mensal
+        and item_prod_mensal.cd_item_producao='NºLEITOS'
+        and to_char(PRODUCAO_MENSAL.DT_COMPETENCIA,'mm')=#mes#
+          and to_char(PRODUCAO_MENSAL.DT_COMPETENCIA,'yyyy')=#ano#
+        and setor.cd_multi_empresa=m.cd_multi_empresa
+        and setor.cd_setor  in (55,56,58,59,60,61,62,63,64,65,66,67,71)
+        and m.cd_multi_empresa=1        
+         group by  setor.cd_setor,
+       nm_setor,
+       item_prod_mensal.cd_item_producao 
+        ,PRODUCAO_MENSAL.DT_COMPETENCIA
+union 
+   select to_char(ip.dt_competencia,'mm')mes
+     ,to_char(ip.dt_competencia,'yyyy')ano
+     ,ip.cd_setor   cd_setor  
+     ,setor.NM_SETOR nm_setor
+     ,0 vl_Custo_total
+     ,0 n_leito
+     ,0 dias
+     ,sum(nvl(ip.vl_unid_producao,0))      qtd_prod
+  from dbamv.ind_produtividade ip
+      ,dbamv.setor_item  si
+      ,dbamv.item_producao
+      ,dbamv.setor
+ where ip.cd_multi_empresa = 1
+    and to_char(ip.dt_competencia,'mm')  =#mes#
+     and to_char(ip.dt_competencia,'yyyy')=#ano#
+    and ip.cd_setor = si.cd_setor 
+    and setor.CD_SETOR=ip.cd_setor
+    and setor.cd_setor  in (55,56,58,59,60,61,62,63,64,65,66,67,71)
+    and ip.cd_item_producao = si.cd_item_producao
+    and ip.cd_item_producao = item_producao.cd_item_producao
+     group by ip.dt_competencia
+     ,ip.cd_setor     
+     ,setor.NM_SETOR 
+     
+    )
+    group by mes
+     ,ano
+     ,cd_setor  
+     ,nm_setor
+     having sum( n_leito)>=1
+     )
+ 
