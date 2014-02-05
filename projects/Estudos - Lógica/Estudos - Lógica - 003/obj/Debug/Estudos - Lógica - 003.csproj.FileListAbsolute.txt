@@ -1,0 +1,6 @@
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 003\bin\Debug\Estudos - Lógica - 003.exe.config
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 003\bin\Debug\Estudos - Lógica - 003.exe
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 003\bin\Debug\Estudos - Lógica - 003.pdb
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 003\obj\Debug\Estudos - Lógica - 003.csprojResolveAssemblyReference.cache
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 003\obj\Debug\Estudos - Lógica - 003.exe
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 003\obj\Debug\Estudos - Lógica - 003.pdb

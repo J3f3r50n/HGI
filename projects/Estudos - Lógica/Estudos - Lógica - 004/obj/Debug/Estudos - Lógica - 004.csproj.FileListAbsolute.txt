@@ -1,0 +1,5 @@
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 004\bin\Debug\Estudos - Lógica - 004.exe.config
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 004\bin\Debug\Estudos - Lógica - 004.exe
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 004\bin\Debug\Estudos - Lógica - 004.pdb
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 004\obj\Debug\Estudos - Lógica - 004.exe
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica - 004\obj\Debug\Estudos - Lógica - 004.pdb

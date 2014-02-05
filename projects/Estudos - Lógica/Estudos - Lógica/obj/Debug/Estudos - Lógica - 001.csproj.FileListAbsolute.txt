@@ -1,0 +1,3 @@
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica\bin\Debug\Estudos - Lógica.exe.config
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica\obj\Debug\Estudos - Lógica.exe
+c:\users\jeferson\documents\visual studio 2013\Projects\Estudos - Lógica\Estudos - Lógica\obj\Debug\Estudos - Lógica.pdb
